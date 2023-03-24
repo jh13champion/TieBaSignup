@@ -2,7 +2,7 @@
 
 ## 今日签到状态
 
-![Baidu Tieba Auto Sign](https://github.com/jh13champion/TieBaSign/workflows/Baidu%20Tieba%20Auto%20Sign/badge.svg)
+![Baidu Tieba Auto Sign](https://github.com/jh13champion/TieBaSignup/workflows/Baidu%20Tieba%20Auto%20Sign/badge.svg)
 
 ## 简单的使用说明
 
