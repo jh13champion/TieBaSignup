@@ -31,6 +31,3 @@
 | TO  | 收信邮箱地址  |  |
 | HOST  | 发信邮箱SMTP服务器地址  |  |
 | AUTH | 发信邮箱SMTP登录密码/秘钥  |  |
-
-## 稍微详细一点的部署教程
-- [稍微详细一点的部署教程](https://www.tjsky.net/tutorial/526)
