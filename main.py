@@ -212,22 +212,29 @@ def send_email(sign_list):
     smtp.quit()
 
 def main():
-    if ('BDUSS' not in ENV):
+    if 'BDUSS' not in ENV:
         logger.error("未配置BDUSS")
         return
+    
     b = ENV['BDUSS'].split('#')
     for n, i in enumerate(b):
-        logger.info("开始签到第" + str(n) + "个用户" + i)
+        # 只显示 BDUSS 的前后几位，其余部分用星号掩盖
+        masked_bduss = i[:4] + '*' * (len(i) - 8) + i[-4:]
+        logger.info(f"开始签到第 {n} 个用户: {masked_bduss}")
+        
         tbs = get_tbs(i)
         favorites = get_favorite(i)
         for j in favorites:
-            time.sleep(random.randint(1,5))
+            time.sleep(random.randint(1, 5))
             client_sign(i, tbs, j["id"], j["name"])
-        logger.info("完成第" + str(n) + "个用户签到")
-  #  send_email(favorites)
+        
+        logger.info(f"完成第 {n} 个用户签到")
+          #  send_email(favorites)
   #  不需要发送邮件
   #  发哪门子邮件嘛
     logger.info("所有用户签到结束")
+
+
 
 
 if __name__ == '__main__':
