@@ -18,7 +18,7 @@ jobs:
       - name: 'Install dependencies'
         run: python -m pip install --upgrade requests
       - name: Add Mask
-        run: echo "::add-mask::${{ secrets.MY_SECRET_TIEBA }}"
+        run: echo "::add-mask::${{ secrets.BDUSS }}"
       - name: 'Start Sign'
         env:
           BDUSS: ${{ secrets.BDUSS }}
