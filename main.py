@@ -229,7 +229,7 @@ def main():
             client_sign(i, tbs, j["id"], j["name"])
         
         logger.info(f"完成第 {n} 个用户签到")
-          #  send_email(favorites)
+  #  send_email(favorites)
   #  不需要发送邮件
   #  发哪门子邮件嘛
     logger.info("所有用户签到结束")
