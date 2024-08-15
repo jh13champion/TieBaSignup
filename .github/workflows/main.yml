@@ -17,8 +17,6 @@ jobs:
           python-version: '3.10'
       - name: 'Install dependencies'
         run: python -m pip install --upgrade requests
-      - name: Add Mask
-        run: echo "::add-mask::${{ secrets.BDUSS }}"
       - name: 'Start Sign'
         env:
           BDUSS: ${{ secrets.BDUSS }}
