@@ -165,13 +165,14 @@ def encodeData(data):
 
 
 def client_sign(bduss, tbs, fid, kw):
-    # 客户端签到
-    logger.info("开始签到贴吧：" + kw)
+    # 只显示贴吧名称的第一个字
+    logger.info("开始签到贴吧：" + kw[0])
     data = copy.copy(SIGN_DATA)
     data.update({BDUSS: bduss, FID: fid, KW: kw, TBS: tbs, TIMESTAMP: str(int(time.time()))})
     data = encodeData(data)
     res = s.post(url=SIGN_URL, data=data, timeout=10).json()
     return res
+
 
 def send_email(sign_list):
     if ('HOST' not in ENV or 'FROM' not in ENV or 'TO' not in ENV or 'AUTH' not in ENV):
