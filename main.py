@@ -164,14 +164,32 @@ def encodeData(data):
     return data
 
 
-def client_sign(bduss, tbs, fid, kw):
-    # 只显示贴吧名称的第一个字
-    logger.info("开始签到贴吧：" + kw[0])
+def client_sign(bduss, tbs, fid, kw, retries=3):  # 添加 retries 参数
+    logger.info("开始签到贴吧：" + kw[0])  # 只显示贴吧名称的第一个字
+
     data = copy.copy(SIGN_DATA)
-    data.update({BDUSS: bduss, FID: fid, KW: kw, TBS: tbs, TIMESTAMP: str(int(time.time()))})
-    data = encodeData(data)
-    res = s.post(url=SIGN_URL, data=data, timeout=10).json()
-    return res
+    data.update({
+        BDUSS: bduss,
+        FID: fid,
+        KW: kw,
+        TBS: tbs,
+        TIMESTAMP: str(int(time.time()))
+    })
+    data = encodeData(data)  # 假设 encodeData 函数已定义
+
+    try:
+        # 发起 POST 请求
+        res = s.post(url=SIGN_URL, data=data, timeout=10).json()
+        return res  # 请求成功，返回结果
+    except requests.exceptions.ReadTimeout:
+        if retries > 0:
+            print(f"请求超时，正在重试... 贴吧: {kw[0]}，剩余重试次数: {retries}")
+            time.sleep(5)  # 暂停5秒再重试
+            return client_sign(bduss, tbs, fid, kw, retries=retries - 1)  # 递归重试，减少重试次数
+        else:
+            print(f"重试失败，已放弃请求。贴吧: {kw[0]}")
+            logger.error(f"重试失败，已放弃请求。贴吧: {kw[0]}")
+            return None  # 返回 None 表示重试失败
 
 
 def send_email(sign_list):
