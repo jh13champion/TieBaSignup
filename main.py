@@ -9,6 +9,8 @@ import random
 
 import smtplib
 from email.mime.text import MIMEText
+from requests.exceptions import ReadTimeout, RequestException
+from json.decoder import JSONDecodeError
 
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -163,9 +165,8 @@ def encodeData(data):
     data.update({SIGN: str(sign)})
     return data
 
-
-def client_sign(bduss, tbs, fid, kw, retries=3):  # 添加 retries 参数
-    logger.info("开始签到贴吧：" + kw[0])  # 只显示贴吧名称的第一个字
+def client_sign(bduss, tbs, fid, kw, retries=3):
+    logger.info(f"开始签到贴吧：{kw[0]}")
 
     data = copy.copy(SIGN_DATA)
     data.update({
@@ -175,21 +176,43 @@ def client_sign(bduss, tbs, fid, kw, retries=3):  # 添加 retries 参数
         TBS: tbs,
         TIMESTAMP: str(int(time.time()))
     })
-    data = encodeData(data)  # 假设 encodeData 函数已定义
+    data = encodeData(data)
 
     try:
         # 发起 POST 请求
-        res = s.post(url=SIGN_URL, data=data, timeout=10).json()
-        return res  # 请求成功，返回结果
-    except requests.exceptions.ReadTimeout:
+        res = s.post(url=SIGN_URL, data=data, timeout=10)
+        try:
+            json_data = res.json()  # 尝试将响应解析为 JSON
+
+            # 根据不同的错误码进行判断和处理
+            if json_data.get("error_code") == "160002":
+                logger.info(f"贴吧 {kw[0]} 已经签到过了")
+                return json_data  # 不再重试，返回响应数据
+            else:
+                return json_data  # 请求成功，返回 JSON 数据
+
+        except JSONDecodeError:
+            logger.error(f"无法解析 JSON，响应内容: {res.text}")
+            if retries > 0:
+                print(f"解析失败，正在重试... 贴吧: {kw[0]}，剩余重试次数: {retries}")
+                time.sleep(5)
+                return client_sign(bduss, tbs, fid, kw, retries=retries - 1)
+            else:
+                logger.error(f"重试失败，已放弃请求。贴吧: {kw[0]}")
+                return None
+
+    except ReadTimeout:
         if retries > 0:
             print(f"请求超时，正在重试... 贴吧: {kw[0]}，剩余重试次数: {retries}")
-            time.sleep(5)  # 暂停5秒再重试
-            return client_sign(bduss, tbs, fid, kw, retries=retries - 1)  # 递归重试，减少重试次数
+            time.sleep(5)
+            return client_sign(bduss, tbs, fid, kw, retries=retries - 1)
         else:
-            print(f"重试失败，已放弃请求。贴吧: {kw[0]}")
             logger.error(f"重试失败，已放弃请求。贴吧: {kw[0]}")
-            return None  # 返回 None 表示重试失败
+            return None
+
+    except RequestException as e:
+        logger.error(f"请求失败，错误信息: {str(e)}")
+        return None
 
 
 def send_email(sign_list):
