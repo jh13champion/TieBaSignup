@@ -166,7 +166,9 @@ def encodeData(data):
     return data
 
 def client_sign(bduss, tbs, fid, kw, retries=3):
-    logger.info(f"开始签到贴吧：{kw[0]}")
+    # 终极写法：既防空字符串崩溃，又能把单字吧完美打码
+    masked_kw = (kw[0] + "*" * (len(kw) - 1) if len(kw) > 1 else kw + "*") if kw else "未知贴吧"
+    logger.info(f"开始签到贴吧：{masked_kw}")
 
     data = copy.copy(SIGN_DATA)
     data.update({
