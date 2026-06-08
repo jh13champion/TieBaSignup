@@ -61,7 +61,7 @@ def get_tbs(bduss):
     try:
         tbs = s.get(url=TBS_URL, headers=headers, timeout=10).json()[TBS]
     except Exception as e:
-        logger.error("获取tbs出错" + e)
+        logger.error(f"获取tbs出错: {e}")  # 仅修改此处报错隐患
         logger.info("重新获取tbs开始")
         tbs = s.get(url=TBS_URL, headers=headers, timeout=10).json()[TBS]
     logger.info("获取tbs结束")
@@ -91,7 +91,7 @@ def get_favorite(bduss):
     try:
         res = s.post(url=LIKIE_URL, data=data, timeout=10).json()
     except Exception as e:
-        logger.error("获取关注的贴吧出错" + e)
+        logger.error(f"获取关注的贴吧出错: {e}")  # 仅修改此处报错隐患
         return []
     returnData = res
     if 'forum_list' not in returnData:
@@ -122,7 +122,7 @@ def get_favorite(bduss):
         try:
             res = s.post(url=LIKIE_URL, data=data, timeout=10).json()
         except Exception as e:
-            logger.error("获取关注的贴吧出错" + e)
+            logger.error(f"获取关注的贴吧出错: {e}")  # 仅修改此处报错隐患
             continue
         if 'forum_list' not in res:
             continue
@@ -157,11 +157,11 @@ def get_favorite(bduss):
 
 
 def encodeData(data):
-    s = EMPTY_STR
+    s_str = EMPTY_STR
     keys = data.keys()
     for i in sorted(keys):
-        s += i + EQUAL + str(data[i])
-    sign = hashlib.md5((s + SIGN_KEY).encode(UTF8)).hexdigest().upper()
+        s_str += i + EQUAL + str(data[i])
+    sign = hashlib.md5((s_str + SIGN_KEY).encode(UTF8)).hexdigest().upper()
     data.update({SIGN: str(sign)})
     return data
 
@@ -188,7 +188,7 @@ def client_sign(bduss, tbs, fid, kw, retries=3):
 
             # 根据不同的错误码进行判断和处理
             if json_data.get("error_code") == "160002":
-                logger.info(f"贴吧 {kw[0]} 已经签到过了")
+                logger.info(f"贴吧 {masked_kw} 已经签到过了")  # 仅修改 kw[0] 报错隐患
                 return json_data  # 不再重试，返回响应数据
             else:
                 return json_data  # 请求成功，返回 JSON 数据
@@ -196,20 +196,20 @@ def client_sign(bduss, tbs, fid, kw, retries=3):
         except JSONDecodeError:
             logger.error(f"无法解析 JSON，响应内容: {res.text}")
             if retries > 0:
-                print(f"解析失败，正在重试... 贴吧: {kw[0]}，剩余重试次数: {retries}")
+                print(f"解析失败，正在重试... 贴吧: {masked_kw}，剩余重试次数: {retries}")  # 仅修改 kw[0] 报错隐患
                 time.sleep(5)
                 return client_sign(bduss, tbs, fid, kw, retries=retries - 1)
             else:
-                logger.error(f"重试失败，已放弃请求。贴吧: {kw[0]}")
+                logger.error(f"重试失败，已放弃请求。贴吧: {masked_kw}")  # 仅修改 kw[0] 报错隐患
                 return None
 
     except ReadTimeout:
         if retries > 0:
-            print(f"请求超时，正在重试... 贴吧: {kw[0]}，剩余重试次数: {retries}")
+            print(f"请求超时，正在重试... 贴吧: {masked_kw}，剩余重试次数: {retries}")  # 仅修改 kw[0] 报错隐患
             time.sleep(5)
             return client_sign(bduss, tbs, fid, kw, retries=retries - 1)
         else:
-            logger.error(f"重试失败，已放弃请求。贴吧: {kw[0]}")
+            logger.error(f"重试失败，已放弃请求。贴吧: {masked_kw}")  # 仅修改 kw[0] 报错隐患
             return None
 
     except RequestException as e:
@@ -277,8 +277,6 @@ def main():
   #  不需要发送邮件
   #  发哪门子邮件嘛  #
     logger.info("所有用户签到结束")
-
-
 
 
 if __name__ == '__main__':
